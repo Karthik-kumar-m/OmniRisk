@@ -31,6 +31,10 @@
           <span class="status-dot"></span>
           <span id="slaStatusText">Latency &lt; 10s SLA Validated</span>
         </div>
+        <div class="status-pill rag-pill" id="ragStatusPill" title="LangChain + ChromaDB Persistent Vector Store Grounding">
+          <span class="status-dot" style="background: #22d3ee; box-shadow: 0 0 8px #22d3ee;"></span>
+          <span id="ragGroundingText" style="color: #67e8f9;">RAG Grounding: ChromaDB Active</span>
+        </div>
         <div class="status-pill engine-pill">
           <span class="status-dot"></span>
           <span id="activeEngineText">Detecting Engine...</span>
@@ -38,6 +42,9 @@
       </div>
 
       <div class="header-actions">
+        <button id="btnOpenGuidelinesLibrary" class="btn-secondary" style="border-color: rgba(6, 182, 212, 0.45); color: #22d3ee;" title="Browse Underwriting Guidelines & Manuals (ChromaDB)">
+          <span>📖</span> Corporate Guidelines
+        </button>
         <button id="btnOpenAccountsVault" class="btn-secondary" style="border-color: rgba(168, 85, 247, 0.45); color: #c084fc;" title="Browse and Audit All 120 Accounts in insurance_model.xlsx">
           <span>📑</span> All 120 Accounts
         </button>
@@ -373,6 +380,54 @@
           <!-- KRI Cards dynamically populated here -->
           <div style="text-align: center; color: var(--text-dim); padding: 2rem 0; font-size: 0.85rem;">
             No synthesis performed yet. Click "Synthesize Risk Profile & KRIs" to extract KRIs.
+          </div>
+        </div>
+      </div>
+
+      <!-- Corporate Underwriting Guidelines & RAG Grounding Inspector (VTU / Academic RAG Core) -->
+      <div class="panel-card rag-inspector-card" id="ragInspectorCard">
+        <div class="panel-header">
+          <div class="rag-header-left">
+            <h2 class="panel-title" style="color: #22d3ee;">
+              <span>📖</span> Corporate Guidelines &amp; RAG Grounding Inspector
+            </h2>
+            <span class="rag-grounding-tag" id="ragGroundingVerifiedTag">
+              <span class="status-dot" style="background:#22d3ee; box-shadow:0 0 8px #22d3ee;"></span>
+              ChromaDB Vector Store Grounded
+            </span>
+          </div>
+          <button id="btnBrowseManualsFromCard" class="btn-sm" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #22d3ee; display: flex; align-items: center; gap: 0.3rem;" title="Explore all 11 indexed corporate underwriting rules">
+            <span>📚</span> Browse All 11 Rules
+          </button>
+        </div>
+
+        <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+          Underwriting manuals indexed into persistent ChromaDB collections with LangChain Core semantic retriever. Audits deterministic threshold breaches and provides verifiable regulatory grounding citations.
+        </p>
+
+        <!-- Subsection A: Corporate Guideline Breaches -->
+        <div class="rag-subpanel">
+          <div class="rag-subpanel-header">
+            <span class="rag-subpanel-title" style="color: #fb7185;">
+              <span>⚠️</span> Corporate Guideline Threshold Breaches
+            </span>
+            <span class="breach-count-pill" id="ragBreachCountBadge">0 Breaches Audited</span>
+          </div>
+          <div class="rag-breach-container" id="ragBreachContainer">
+            <div class="rag-empty-hint">Awaiting synthesis to audit applicant parameters against corporate underwriting limits.</div>
+          </div>
+        </div>
+
+        <!-- Subsection B: Retrieved Knowledge Base Guidelines -->
+        <div class="rag-subpanel" style="margin-top: 1.1rem;">
+          <div class="rag-subpanel-header">
+            <span class="rag-subpanel-title" style="color: #c084fc;">
+              <span>🔍</span> Semantic Vector Matches Retrieved from Vector Store (Top-k)
+            </span>
+            <span class="guideline-count-pill" id="ragRetrievedCountBadge">0 Retrieved</span>
+          </div>
+          <div class="rag-retrieved-container" id="ragRetrievedContainer">
+            <div class="rag-empty-hint">Synthesize a risk profile to inspect top-k guideline semantic vectors.</div>
           </div>
         </div>
       </div>
@@ -731,6 +786,77 @@
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Modal: Corporate Guidelines Knowledge Base Explorer (ChromaDB Vector Store) -->
+  <div class="modal-overlay" id="guidelinesLibraryModal">
+    <div class="modal-container modal-container-large">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" style="color: #22d3ee;">Corporate Underwriting Guidelines Knowledge Base</h2>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Vectorized rules and binding thresholds indexed into ChromaDB from <code>knowledge_base/</code> manuals.
+          </p>
+        </div>
+        <button id="btnCloseGuidelinesModal" class="close-btn">&times;</button>
+      </div>
+
+      <div class="vault-toolbar">
+        <input type="text" id="guidelineSearchInput" class="vault-search-input" placeholder="Search rules by keyword (e.g., roof, flood, hurricane, fleet, credit)...">
+        
+        <div class="excel-filters" style="margin-bottom: 0;" id="guidelineCategoryFilters">
+          <button class="filter-pill-btn active guideline-filter-btn" data-cat="ALL">All Manuals (11)</button>
+          <button class="filter-pill-btn guideline-filter-btn" data-cat="Property">Property</button>
+          <button class="filter-pill-btn guideline-filter-btn" data-cat="Catastrophe">Hazard &amp; Flood</button>
+          <button class="filter-pill-btn guideline-filter-btn" data-cat="Casualty">Fleet &amp; Casualty</button>
+          <button class="filter-pill-btn guideline-filter-btn" data-cat="Financial">Financial Loss</button>
+        </div>
+
+        <span id="guidelinesCountTag" style="font-size: 0.75rem; color: #22d3ee; font-weight: 600;">11 Rules Indexed</span>
+      </div>
+
+      <div class="guidelines-grid-container" id="guidelinesLibraryGrid">
+        <!-- Populated dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Corporate Guideline Rule Deep Dive Inspector -->
+  <div class="modal-overlay" id="guidelineDetailModal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+            <span class="kri-code-tag" id="detailRuleId" style="background: rgba(6, 182, 212, 0.2); color: #22d3ee; border-color: rgba(6, 182, 212, 0.4);">RULE-ID</span>
+            <span class="proof-badge" id="detailCategoryBadge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc;">Property</span>
+          </div>
+          <h2 class="modal-title" id="detailRuleTitle" style="font-size: 1.1rem;">Guideline Rule Title</h2>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;" id="detailManualSource">
+            Property Underwriting &amp; Structural Loss Prevention Manual
+          </p>
+        </div>
+        <button id="btnCloseDetailModal" class="close-btn">&times;</button>
+      </div>
+
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div class="rag-breach-comparison" style="margin-bottom: 0;">
+          <div class="breach-box thresh-box">
+            <span class="breach-box-label">Corporate Standard Threshold</span>
+            <div id="detailThresholdText" class="breach-box-val" style="font-size: 0.85rem; font-family: var(--font-sans); font-weight: 600; color: #f87171;">--</div>
+          </div>
+          <div class="breach-box mitigation-box" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3);">
+            <span class="breach-box-label" style="color: #34d399;">Actionable Mitigation / Requirement</span>
+            <div id="detailMitigationText" class="breach-box-val" style="font-size: 0.85rem; font-family: var(--font-sans); font-weight: 600; color: #34d399;">--</div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em;">Full Rule Specification</h4>
+          <div class="narrative-box" id="detailRuleFullText" style="white-space: pre-wrap; font-size: 0.8rem; line-height: 1.6; max-height: 280px; overflow-y: auto;">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 

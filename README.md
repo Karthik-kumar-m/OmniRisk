@@ -1,23 +1,29 @@
-# OmniRisk: Automated Risk Profile Summarizer
+# OmniRisk: Automated Risk Profile Summarizer & RAG Underwriting Subsystem
 
-[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Python Version](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Pydantic v2](https://img.shields.io/badge/Pydantic-v2.8%2B-E92063.svg?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
+[![ChromaDB](https://img.shields.io/badge/Vector%20Store-ChromaDB%20v1.5.9-FF6F00.svg)](https://www.trychroma.com/)
+[![LangChain Core](https://img.shields.io/badge/LangChain-1.4%2B-green.svg?logo=langchain&logoColor=white)](https://www.langchain.com/)
 [![Google Gemini](https://img.shields.io/badge/Google%20GenAI-Gemini%203.5%20Flash%20Lite-8E75B2.svg?logo=google&logoColor=white)](https://ai.google.dev/)
-[![Tests](https://img.shields.io/badge/Tests-10%20Passed-brightgreen.svg?logo=pytest&logoColor=white)](tests/)
+[![Tests](https://img.shields.io/badge/Tests-17%20Passed-brightgreen.svg?logo=pytest&logoColor=white)](tests/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Zero PII](https://img.shields.io/badge/Privacy-100%25%20Zero--PII-success.svg)](#-zero-pii-privacy-mandate)
-[![SLA Speed](https://img.shields.io/badge/SLA%20Speed-%3C%2020s%20(Sub--Second)-blue.svg)](#-sla-performance-verification)
-[![SLA Accuracy](https://img.shields.io/badge/SLA%20Accuracy-89.0%25%20%28%E2%89%A585%25%20Met%29-brightgreen.svg)](#-sla-performance-verification)
+[![SLA Speed](https://img.shields.io/badge/SLA%20Speed-%3C%2010s%20(Sub--Second)-blue.svg)](#-sla-performance-verification)
+[![SLA Accuracy](https://img.shields.io/badge/SLA%20Accuracy-92.8%25%20%28%E2%89%A585%25%20Met%29-brightgreen.svg)](#-sla-performance-verification)
 
-> **TCS Technology Day Challenge — Insurance Underwriting GenAI Solution**  
-> An enterprise-grade, single-agent GenAI application that ingests fragmented customer risk payloads, normalizes actuarial metrics, enforces strict Zero-PII privacy policies, and synthesizes clear, actionable underwriter summaries prominently featuring **Key Risk Indicators (KRIs)**.
+> **Academic Mini Project — Visvesvaraya Technological University (VTU), Belagavi**  
+> **Jawaharlal Nehru National College of Engineering (JNNCE), Shivamogga — Dept. of Computer Science & Engineering**  
+> **Batch A13** | **Project Guide:** Dr. Benakappa S M, Associate Professor  
+> **Team:** Anagha K G (`4JN24CS009`), B S Nithya (`4JN24CS024`), Jeevan Kumar A (`4JN24CS062`), Karthik Kumar M (`4JN24CS065`)  
+> **Project Title:** *Automated Property and Casualty risk assessment and profile summarization using Retrieval Augmented Generation (RAG)*
 
 ---
 
 ## 📑 Table of Contents
 - [Executive Overview](#-executive-overview)
+- [Academic Mini Project Deliverables](#-academic-mini-project-deliverables)
 - [System Architecture](#-system-architecture)
+- [RAG Knowledge Base & Vector Subsystem](#-rag-knowledge-base--vector-subsystem)
 - [Key Features](#-key-features)
 - [Zero-PII Privacy Mandate](#-zero-pii-privacy-mandate)
 - [SLA Performance Verification](#-sla-performance-verification)
@@ -26,8 +32,18 @@
 - [Quick Start Guide](#-quick-start-guide)
 - [API Documentation](#-api-documentation)
 - [Automated Testing](#-automated-testing)
-- [Uploading to GitHub](#-uploading-to-github)
 - [License](#-license)
+
+---
+
+## 🎓 Academic Mini Project Deliverables
+
+This repository houses the complete academic package prepared for the Department of Computer Science & Engineering, JNNCE Shivamogga / VTU:
+
+1. **[VTU Formal Project Report](file:///d:/dev/OmniRisk/academic/PROJECT_REPORT_VTU.md):** Complete 7-chapter report structured per VTU thesis guidelines covering Abstract, Certificate, Declaration, Literature Survey, System Requirements, Detailed Design, Implementation, Testing, and Future Work.
+2. **[UML Diagrams & System Specifications](file:///d:/dev/OmniRisk/academic/UML_DIAGRAMS.md):** Full suite of Mermaid architecture diagrams: System Context, UML Use Case, Class Diagram, Sequence Diagram, DFD Level 0 & Level 1, and Component Architecture.
+3. **[12-Slide Seminar Presentation Deck](file:///d:/dev/OmniRisk/academic/PRESENTATION_DECK.md):** 12-slide review presentation script and speaker notes tailored for college seminar defense.
+4. **[Viva Voce & Defense Guide](file:///d:/dev/OmniRisk/academic/VIVA_QUESTIONS_DEFENSE_GUIDE.md):** 24+ comprehensive viva questions and answers covering RAG, embeddings, LangChain, actuarial metrics, and Zero-PII compliance.
 
 ---
 
@@ -272,11 +288,11 @@ OmniRisk exposes an OpenAPI-compliant REST API:
 
 ## 🧪 Automated Testing
 
-OmniRisk includes a comprehensive Pytest test suite covering PII sanitization, actuarial normalization, LLM response formatting, Excel relational ETL, and accuracy benchmarks.
+OmniRisk includes a comprehensive Pytest test suite covering PII sanitization, actuarial normalization, LLM response formatting, Excel relational ETL, ChromaDB vector indexing, semantic search, guideline breach auditing, and accuracy benchmarks.
 
-Run all tests:
+Run all 17 tests:
 ```bash
-python -m pytest tests/ -v
+python run_tests.py tests/ -v
 ```
 
 Expected output:
@@ -291,8 +307,15 @@ tests/test_omnirisk.py::test_preprocessing_and_normalization PASSED
 tests/test_omnirisk.py::test_agent_synthesis_schema_compliance PASSED
 tests/test_omnirisk.py::test_accuracy_benchmark_target_met PASSED
 tests/test_omnirisk.py::test_api_endpoints PASSED
+tests/test_rag_pipeline.py::test_knowledge_base_manuals_exist PASSED
+tests/test_rag_pipeline.py::test_chroma_guideline_manager_indexing PASSED
+tests/test_rag_pipeline.py::test_semantic_search_retrieves_relevant_rules PASSED
+tests/test_rag_pipeline.py::test_roof_age_guideline_breach_detection PASSED
+tests/test_rag_pipeline.py::test_prior_cancellation_breach_detection PASSED
+tests/test_rag_pipeline.py::test_agent_synthesis_includes_rag_citations PASSED
+tests/test_rag_pipeline.py::test_guidelines_api_endpoints PASSED
 
-======================== 10 passed in 86s ========================
+======================== 17 passed in 198s ========================
 ```
 
 ---

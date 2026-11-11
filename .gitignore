@@ -69,3 +69,8 @@ desktop.ini
 *.log
 tmp/
 temp/
+
+# ChromaDB Persistent Vector Cache (Auto-generated on first run from knowledge_base/*.md)
+knowledge_base/chroma_db/
+.cache/
+

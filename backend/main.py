@@ -95,7 +95,30 @@ async def health_check():
         "accuracy_target_pct": 85.0,
         "excel_dataset_loaded": excel_service.is_loaded,
         "excel_total_customers": len(excel_service.customers_df) if excel_service.is_loaded else 0,
+        "rag_vector_db_ready": bool(agent.chroma_manager),
+        "indexed_guidelines_count": len(agent.chroma_manager.get_all_guidelines()),
     }
+
+
+@app.get("/api/guidelines")
+async def list_guidelines():
+    """Returns all indexed corporate underwriting guidelines in the Vector Store."""
+    all_g = agent.chroma_manager.get_all_guidelines()
+    return {
+        "total_guidelines": len(all_g),
+        "collection_name": agent.chroma_manager.COLLECTION_NAME,
+        "guidelines": all_g
+    }
+
+
+@app.get("/api/guidelines/{rule_id}")
+async def get_guideline_by_id(rule_id: str):
+    """Retrieves full text and metadata for a specific corporate guideline rule."""
+    all_g = agent.chroma_manager.get_all_guidelines()
+    match = next((g for g in all_g if g["rule_id"].upper() == rule_id.upper()), None)
+    if not match:
+        raise HTTPException(status_code=404, detail=f"Rule '{rule_id}' not found in corporate guidelines.")
+    return match
 
 
 @app.get("/api/scenarios")

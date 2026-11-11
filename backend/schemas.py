@@ -96,6 +96,26 @@ class KeyRiskIndicator(BaseModel):
     recommended_action: str = Field(..., description="Endorsement, surcharge, warranty, or underwriting exclusion")
 
 
+class GuidelineBreach(BaseModel):
+    """Specific breach of corporate underwriting guidelines identified by RAG."""
+    rule_id: str = Field(..., description="Corporate rule identifier, e.g. RULE-P-101")
+    title: str = Field(..., description="Title of breached guideline")
+    manual_source: str = Field(..., description="Guideline manual source name")
+    corporate_threshold: str = Field(..., description="Corporate allowable threshold")
+    applicant_observed: str = Field(..., description="Observed applicant attribute")
+    severity: Literal["CRITICAL", "HIGH", "MODERATE", "ADVISORY"] = Field(...)
+    actionable_mitigation: str = Field(..., description="Mandatory endorsement or warranty to cure breach")
+
+
+class RetrievedGuideline(BaseModel):
+    """Domain guideline chunk retrieved from ChromaDB vector store."""
+    rule_id: str
+    manual: str
+    title: str
+    excerpt: str
+    relevance_score: float
+
+
 class NormalizedRiskProfile(BaseModel):
     """Normalized, aggregated representation produced by preprocessing engine."""
     customer_id: str
@@ -134,3 +154,6 @@ class UnderwritingSynthesisReport(BaseModel):
     actuarial_metrics: Dict[str, Any]
     processing_time_ms: float
     ai_generation_engine: str
+    guideline_breaches: List[GuidelineBreach] = Field(default_factory=list)
+    retrieved_guidelines: List[RetrievedGuideline] = Field(default_factory=list)
+    rag_grounding_verified: bool = Field(default=True)

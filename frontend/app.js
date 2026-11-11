@@ -124,6 +124,36 @@ const btnApplyWhatIf = document.getElementById('btnApplyWhatIf');
 const btnCopySummary = document.getElementById('btnCopySummary');
 const btnExportSlip = document.getElementById('btnExportSlip');
 
+// RAG Subsystem & Guidelines Inspector Elements
+const ragBreachCountBadge = document.getElementById('ragBreachCountBadge');
+const ragBreachContainer = document.getElementById('ragBreachContainer');
+const ragRetrievedCountBadge = document.getElementById('ragRetrievedCountBadge');
+const ragRetrievedContainer = document.getElementById('ragRetrievedContainer');
+const ragGroundingVerifiedTag = document.getElementById('ragGroundingVerifiedTag');
+const ragStatusPill = document.getElementById('ragStatusPill');
+const ragGroundingText = document.getElementById('ragGroundingText');
+
+const btnOpenGuidelinesLibrary = document.getElementById('btnOpenGuidelinesLibrary');
+const btnBrowseManualsFromCard = document.getElementById('btnBrowseManualsFromCard');
+const guidelinesLibraryModal = document.getElementById('guidelinesLibraryModal');
+const btnCloseGuidelinesModal = document.getElementById('btnCloseGuidelinesModal');
+const guidelinesLibraryGrid = document.getElementById('guidelinesLibraryGrid');
+const guidelineSearchInput = document.getElementById('guidelineSearchInput');
+const guidelinesCountTag = document.getElementById('guidelinesCountTag');
+
+const guidelineDetailModal = document.getElementById('guidelineDetailModal');
+const btnCloseDetailModal = document.getElementById('btnCloseDetailModal');
+const detailRuleId = document.getElementById('detailRuleId');
+const detailCategoryBadge = document.getElementById('detailCategoryBadge');
+const detailRuleTitle = document.getElementById('detailRuleTitle');
+const detailManualSource = document.getElementById('detailManualSource');
+const detailThresholdText = document.getElementById('detailThresholdText');
+const detailMitigationText = document.getElementById('detailMitigationText');
+const detailRuleFullText = document.getElementById('detailRuleFullText');
+
+let allIndexedGuidelines = [];
+let activeGuidelineCategory = 'ALL';
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
   initHealthCheck();
@@ -411,6 +441,9 @@ async function initHealthCheck() {
       activeEngineText.textContent = data.active_engine;
       if (data.excel_dataset_loaded && excelSummaryTag) {
         excelSummaryTag.textContent = `${data.excel_total_customers} Accounts Available`;
+      }
+      if (data.rag_vector_db_ready && ragGroundingText) {
+        ragGroundingText.textContent = `RAG: ${data.indexed_guidelines_count || 11} Rules (ChromaDB)`;
       }
     }
   } catch (err) {
@@ -893,6 +926,90 @@ function renderSynthesisReport(report, clientElapsedMs) {
     });
   }
 
+  // D2. Corporate Guideline Breaches & RAG Grounding Inspector
+  const breaches = report.guideline_breaches || [];
+  if (ragBreachCountBadge && ragBreachContainer) {
+    if (breaches.length === 0) {
+      ragBreachCountBadge.textContent = '0 Breaches (Clean)';
+      ragBreachCountBadge.classList.add('clean');
+      ragBreachContainer.innerHTML = `
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.6rem; color: #34d399; font-size: 0.8rem;">
+          <span style="font-size: 1.15rem;">✅</span>
+          <div>
+            <strong>Full Underwriting Compliance:</strong> All observed applicant parameters adhere to corporate guidelines and binding limits across all 4 underwriting manuals.
+          </div>
+        </div>
+      `;
+    } else {
+      ragBreachCountBadge.textContent = `${breaches.length} Breache${breaches.length > 1 ? 's' : ''} Audited`;
+      ragBreachCountBadge.classList.remove('clean');
+      ragBreachContainer.innerHTML = '';
+      breaches.forEach(b => {
+        const card = document.createElement('div');
+        card.className = 'rag-breach-card';
+        card.innerHTML = `
+          <div class="rag-breach-header">
+            <div class="rag-breach-title-wrap">
+              <span class="rule-link-pill" onclick="openGuidelineDetail('${b.rule_id}')" title="Inspect ${b.rule_id}">
+                <span>📖</span> ${b.rule_id}
+              </span>
+              <strong style="font-size: 0.82rem; color: #fff;">${b.title}</strong>
+            </div>
+            <span class="severity-pill ${b.severity.toLowerCase()}">${b.severity}</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted);">
+            Source Manual: <em style="color: #cbd5e1;">${b.manual_source}</em>
+          </div>
+          <div class="rag-breach-comparison">
+            <div class="breach-box thresh-box">
+              <span class="breach-box-label">Corporate Threshold</span>
+              <div class="breach-box-val breach-thresh-val">${b.corporate_threshold}</div>
+            </div>
+            <div class="breach-box observed-box">
+              <span class="breach-box-label">Applicant Observed</span>
+              <div class="breach-box-val breach-observed-val">${b.applicant_observed}</div>
+            </div>
+          </div>
+          <div class="rag-breach-mitigation">
+            <strong>Mandatory Mitigation:</strong> ${b.actionable_mitigation}
+          </div>
+        `;
+        ragBreachContainer.appendChild(card);
+      });
+    }
+  }
+
+  // D3. Retrieved Semantic Guidelines from ChromaDB
+  const retrieved = report.retrieved_guidelines || [];
+  if (ragRetrievedCountBadge && ragRetrievedContainer) {
+    if (retrieved.length === 0) {
+      ragRetrievedCountBadge.textContent = '0 Retrieved';
+      ragRetrievedContainer.innerHTML = '<div class="rag-empty-hint">No specific semantic guideline matches retrieved for this risk profile.</div>';
+    } else {
+      ragRetrievedCountBadge.textContent = `${retrieved.length} Retrieved`;
+      ragRetrievedContainer.innerHTML = '';
+      retrieved.forEach(g => {
+        const card = document.createElement('div');
+        card.className = 'rag-guideline-card';
+        const matchPct = Math.round(g.relevance_score * 100);
+        card.innerHTML = `
+          <div class="rag-guideline-header">
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <span class="rule-link-pill" onclick="openGuidelineDetail('${g.rule_id}')" title="Inspect ${g.rule_id}">
+                <span>📖</span> ${g.rule_id}
+              </span>
+              <strong style="font-size: 0.82rem; color: #e2e8f0;">${g.title}</strong>
+            </div>
+            <span class="rag-relevance-pill">${matchPct}% Match</span>
+          </div>
+          <div style="font-size: 0.7rem; color: #a78bfa;">Manual: ${g.manual}</div>
+          <div class="rag-guideline-excerpt">${g.excerpt}</div>
+        `;
+        ragRetrievedContainer.appendChild(card);
+      });
+    }
+  }
+
   // E. Conditions & Endorsements
   conditionsList.innerHTML = '';
   const conditions = report.recommended_conditions || [];
@@ -902,7 +1019,11 @@ function renderSynthesisReport(report, clientElapsedMs) {
     conditions.forEach(cond => {
       const li = document.createElement('li');
       li.className = 'condition-item';
-      li.innerHTML = `<span>🔹</span><span>${cond}</span>`;
+      const formattedCond = cond.replace(
+        /\[(RULE-[A-Z]-\d+)\]/g,
+        `<span class="rule-link-pill" onclick="openGuidelineDetail('$1')" title="View Corporate Guideline $1"><span>📖</span> $1</span>`
+      );
+      li.innerHTML = `<span>🔹</span><span>${formattedCond}</span>`;
       conditionsList.appendChild(li);
     });
   }
@@ -1148,4 +1269,123 @@ function setupEventListeners() {
     URL.revokeObjectURL(url);
     showToast('Underwriting Slip JSON downloaded.');
   });
+
+  // Corporate Guidelines Library & Detail Modal Controls
+  btnOpenGuidelinesLibrary?.addEventListener('click', openGuidelinesLibrary);
+  btnBrowseManualsFromCard?.addEventListener('click', openGuidelinesLibrary);
+  btnCloseGuidelinesModal?.addEventListener('click', () => guidelinesLibraryModal.classList.remove('active'));
+  guidelinesLibraryModal?.addEventListener('click', (e) => {
+    if (e.target === guidelinesLibraryModal) guidelinesLibraryModal.classList.remove('active');
+  });
+
+  guidelineSearchInput?.addEventListener('input', filterAndRenderGuidelines);
+
+  const gCatBtns = document.querySelectorAll('#guidelineCategoryFilters .guideline-filter-btn');
+  gCatBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      gCatBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeGuidelineCategory = btn.getAttribute('data-cat') || 'ALL';
+      filterAndRenderGuidelines();
+    });
+  });
+
+  btnCloseDetailModal?.addEventListener('click', () => guidelineDetailModal.classList.remove('active'));
+  guidelineDetailModal?.addEventListener('click', (e) => {
+    if (e.target === guidelineDetailModal) guidelineDetailModal.classList.remove('active');
+  });
 }
+
+// 12. Corporate Guidelines Knowledge Base Logic
+async function loadAllGuidelines() {
+  if (allIndexedGuidelines.length > 0) return allIndexedGuidelines;
+  try {
+    const res = await fetch('/api/guidelines');
+    if (res.ok) {
+      const data = await res.json();
+      allIndexedGuidelines = data.guidelines || [];
+      return allIndexedGuidelines;
+    }
+  } catch (err) {
+    console.error('Failed to load corporate guidelines:', err);
+  }
+  return [];
+}
+
+async function openGuidelinesLibrary() {
+  if (guidelinesLibraryModal) {
+    guidelinesLibraryModal.classList.add('active');
+    await loadAllGuidelines();
+    filterAndRenderGuidelines();
+  }
+}
+
+function filterAndRenderGuidelines() {
+  if (!guidelinesLibraryGrid) return;
+  const q = (guidelineSearchInput?.value || '').trim().toLowerCase();
+  let filtered = allIndexedGuidelines;
+
+  if (activeGuidelineCategory !== 'ALL') {
+    filtered = filtered.filter(g => g.category.toLowerCase() === activeGuidelineCategory.toLowerCase());
+  }
+
+  if (q) {
+    filtered = filtered.filter(g =>
+      g.rule_id.toLowerCase().includes(q) ||
+      g.title.toLowerCase().includes(q) ||
+      g.corporate_threshold.toLowerCase().includes(q) ||
+      g.mitigation.toLowerCase().includes(q) ||
+      (g.text && g.text.toLowerCase().includes(q))
+    );
+  }
+
+  if (guidelinesCountTag) {
+    guidelinesCountTag.textContent = `${filtered.length} of ${allIndexedGuidelines.length} Rules`;
+  }
+
+  if (filtered.length === 0) {
+    guidelinesLibraryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-dim); padding: 2rem;">No matching guidelines found.</div>';
+    return;
+  }
+
+  guidelinesLibraryGrid.innerHTML = filtered.map(g => `
+    <div class="guideline-lib-card" onclick="openGuidelineDetail('${g.rule_id}')">
+      <div class="guideline-lib-card-top">
+        <span class="rule-link-pill"><span>📖</span> ${g.rule_id}</span>
+        <span class="proof-badge" style="background: rgba(168,85,247,0.15); color: #c084fc;">${g.category}</span>
+      </div>
+      <div class="guideline-lib-title">${g.title}</div>
+      <div class="guideline-lib-thresh">
+        <strong>Standard:</strong> ${g.corporate_threshold}
+      </div>
+      <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.35;">
+        <strong>Action:</strong> ${g.mitigation.length > 95 ? g.mitigation.slice(0, 95) + '...' : g.mitigation}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function openGuidelineDetail(ruleId) {
+  if (!guidelineDetailModal) return;
+  try {
+    const res = await fetch(`/api/guidelines/${ruleId}`);
+    if (!res.ok) throw new Error('Rule not found');
+    const rule = await res.json();
+
+    detailRuleId.textContent = rule.rule_id;
+    detailCategoryBadge.textContent = rule.category;
+    detailRuleTitle.textContent = rule.title;
+    detailManualSource.textContent = `${rule.manual_source} (${rule.file_name})`;
+    detailThresholdText.textContent = rule.corporate_threshold;
+    detailMitigationText.textContent = rule.mitigation;
+    detailRuleFullText.textContent = rule.text;
+
+    guidelineDetailModal.classList.add('active');
+  } catch (err) {
+    showToast(`Error retrieving rule details for ${ruleId}: ${err.message}`);
+  }
+}
+
+// Make accessible to inline onclick handlers
+window.openGuidelineDetail = openGuidelineDetail;
+window.openGuidelinesLibrary = openGuidelinesLibrary;

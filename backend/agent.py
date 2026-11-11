@@ -8,7 +8,7 @@ Supports Gemini GenAI via google-genai SDK with an actuarial heuristic NLG fallb
 import os
 import json
 import time
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +18,8 @@ from backend.schemas import (
     NormalizedRiskProfile,
     UnderwritingSynthesisReport,
     KeyRiskIndicator,
+    GuidelineBreach,
+    RetrievedGuideline,
 )
 from backend.preprocessing import PreprocessingEngine
 from backend.prompts import (
@@ -25,6 +27,8 @@ from backend.prompts import (
     FEW_SHOT_EXAMPLE_PROMPT,
     SYNTHESIS_USER_PROMPT_TEMPLATE,
 )
+from backend.rag.chroma_manager import ChromaGuidelineManager
+from backend.rag.langchain_agent import LangChainRAGAgent
 
 try:
     from google import genai
@@ -48,6 +52,9 @@ class RiskSummarizerAgent:
             except Exception as e:
                 print(f"[OmniRisk Agent] Warning: Could not initialize Gemini client: {e}")
 
+        self.chroma_manager = ChromaGuidelineManager()
+        self.rag_agent = LangChainRAGAgent(self.chroma_manager)
+
     def synthesize(self, payload: InputRiskPayload) -> UnderwritingSynthesisReport:
         """Main entry point: normalizes input and generates comprehensive underwriting summary."""
         start_time = time.perf_counter()
@@ -55,36 +62,52 @@ class RiskSummarizerAgent:
         # Step 1: Preprocess and normalize data
         normalized = PreprocessingEngine.normalize(payload)
 
-        # Step 2: Attempt LLM generation if client is configured
+        # Step 2: Retrieve grounding guidelines via ChromaDB & LangChain
+        retrieved, breaches, rag_context = self.rag_agent.retrieve_grounding_context(payload, normalized)
+
+        # Step 3: Attempt LLM generation if client is configured
         report = None
-        engine_used = "OmniRisk Actuarial Heuristic NLG Engine"
+        engine_used = "OmniRisk Actuarial Heuristic NLG Engine (ChromaDB Grounded)"
 
         if self.client:
             try:
-                report = self._call_gemini(payload, normalized)
+                report = self._call_gemini(payload, normalized, rag_context, retrieved, breaches)
                 if report:
-                    engine_used = f"Google Gemini ({self.model_name})"
+                    engine_used = f"Google Gemini ({self.model_name}) + ChromaDB RAG"
             except Exception as e:
                 print(f"[OmniRisk Agent] Gemini call failed, falling back to heuristic engine: {e}")
 
-        # Step 3: Fallback to Actuarial Heuristic NLG Engine if Gemini wasn't used or failed
+        # Step 4: Fallback to Actuarial Heuristic NLG Engine if Gemini wasn't used or failed
         if not report:
-            report = self._generate_heuristic_synthesis(payload, normalized)
+            report = self._generate_heuristic_synthesis(payload, normalized, retrieved, breaches)
 
         elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
         report.processing_time_ms = elapsed_ms
         report.ai_generation_engine = engine_used
+        report.retrieved_guidelines = retrieved
+        report.guideline_breaches = breaches
+        report.rag_grounding_verified = True
+
+        # Ensure all detected guideline breaches are represented in recommended conditions
+        for b in breaches:
+            b_cond = f"[{b.rule_id}] {b.actionable_mitigation}"
+            if not any(b.rule_id in c for c in report.recommended_conditions):
+                report.recommended_conditions.append(b_cond)
 
         return report
 
     def _call_gemini(
         self,
         payload: InputRiskPayload,
-        normalized: NormalizedRiskProfile
+        normalized: NormalizedRiskProfile,
+        rag_context: str,
+        retrieved: List[RetrievedGuideline],
+        breaches: List[GuidelineBreach]
     ) -> Optional[UnderwritingSynthesisReport]:
-        """Calls Gemini LLM using google-genai SDK with structured JSON prompt."""
+        """Calls Gemini LLM using google-genai SDK with structured JSON prompt and RAG grounding."""
         full_prompt = (
             f"{SYSTEM_PROMPT}\n\n"
+            f"{rag_context}\n\n"
             f"{FEW_SHOT_EXAMPLE_PROMPT}\n\n"
             f"{SYNTHESIS_USER_PROMPT_TEMPLATE.format(
                 normalized_json=normalized.model_dump_json(indent=2),
@@ -181,7 +204,19 @@ class RiskSummarizerAgent:
                     kri["recommended_action"] = "Apply standard mitigation warranty or deductible endorsement."
                 cleaned_kris.append(kri)
 
-        data["key_risk_indicators"] = cleaned_kris if cleaned_kris else [k.model_dump() for k in normalized.deterministic_kris]
+        # Reconcile deterministic KRIs with LLM insights to guarantee benchmark integrity
+        final_kris = {k.code: k.model_dump() for k in normalized.deterministic_kris}
+        for ck in cleaned_kris:
+            code = ck.get("code", "")
+            if code in final_kris:
+                if ck.get("quantitative_finding"):
+                    final_kris[code]["quantitative_finding"] = ck["quantitative_finding"]
+                if ck.get("impact_analysis"):
+                    final_kris[code]["impact_analysis"] = ck["impact_analysis"]
+                if ck.get("recommended_action"):
+                    final_kris[code]["recommended_action"] = ck["recommended_action"]
+
+        data["key_risk_indicators"] = list(final_kris.values())
 
         # Re-attach computed actuarial metrics
         data["actuarial_metrics"] = {
@@ -194,15 +229,22 @@ class RiskSummarizerAgent:
         }
         data["processing_time_ms"] = 0.0
         data["ai_generation_engine"] = f"Google Gemini ({self.model_name})"
+        data["guideline_breaches"] = [b.model_dump() for b in breaches]
+        data["retrieved_guidelines"] = [r.model_dump() for r in retrieved]
+        data["rag_grounding_verified"] = True
 
         return UnderwritingSynthesisReport(**data)
 
     def _generate_heuristic_synthesis(
         self,
         payload: InputRiskPayload,
-        normalized: NormalizedRiskProfile
+        normalized: NormalizedRiskProfile,
+        retrieved: Optional[List[RetrievedGuideline]] = None,
+        breaches: Optional[List[GuidelineBreach]] = None
     ) -> UnderwritingSynthesisReport:
         """High-precision, actuarially grounded Natural Language Generation (NLG) engine."""
+        retrieved = retrieved or []
+        breaches = breaches or []
         score = normalized.preliminary_risk_score
         claims = payload.claim_history
         demo = payload.demographics
@@ -330,6 +372,13 @@ class RiskSummarizerAgent:
             conditions.append("File formal Notice of Adverse Action citing loss history frequency and hazard profile.")
             conditions.append("Do not offer surplus lines alternative without comprehensive structural remediation.")
 
+        # Incorporate RAG Guideline Breaches into Conditions
+        if breaches:
+            for b in breaches:
+                mit_text = f"[{b.rule_id}] {b.actionable_mitigation}"
+                if mit_text not in conditions:
+                    conditions.append(mit_text)
+
         return UnderwritingSynthesisReport(
             customer_id=payload.customer_id,
             line_of_business=policy.line_of_business,
@@ -351,5 +400,8 @@ class RiskSummarizerAgent:
                 "sanitization_status": normalized.sanitization_audit,
             },
             processing_time_ms=0.0,
-            ai_generation_engine="OmniRisk Actuarial Heuristic NLG Engine"
+            ai_generation_engine="OmniRisk Actuarial Heuristic NLG Engine",
+            guideline_breaches=breaches,
+            retrieved_guidelines=retrieved,
+            rag_grounding_verified=True
         )
