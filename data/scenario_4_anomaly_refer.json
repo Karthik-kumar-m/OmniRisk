@@ -1,0 +1,64 @@
+{
+  "customer_id": "SYNTH-9940-US",
+  "entity_type": "COMMERCIAL",
+  "demographics": {
+    "age": null,
+    "years_in_business": 3,
+    "credit_score": 535,
+    "credit_tier": "POOR",
+    "geographic_risk_zone": "METRO_COMMERCIAL_DISTRICT",
+    "annual_revenue_usd": 650000
+  },
+  "policy_request": {
+    "line_of_business": "COMMERCIAL_PROPERTY",
+    "requested_limit_usd": 1200000,
+    "deductible_usd": 5000,
+    "asset_age_years": 48,
+    "asset_category_or_construction": "Unreinforced Masonry (URM)",
+    "protection_class_or_security": "Standard Commercial Lock / Unmonitored"
+  },
+  "claim_history": {
+    "years_of_history": 3,
+    "total_claims_count": 4,
+    "total_payout_amount_usd": 215000,
+    "open_claims_count": 1,
+    "incidents": [
+      {
+        "year": 2023,
+        "peril": "Fire",
+        "payout_usd": 85000,
+        "at_fault": true,
+        "description": "Kitchen grease duct flash fire spreading to adjacent wall void."
+      },
+      {
+        "year": 2024,
+        "peril": "Theft",
+        "payout_usd": 32000,
+        "at_fault": false,
+        "description": "Forced entry into rear staging bay; tools and inventory removed."
+      },
+      {
+        "year": 2024,
+        "peril": "Liability",
+        "payout_usd": 48000,
+        "at_fault": true,
+        "description": "Customer slip and fall on greasy floor without caution cone."
+      },
+      {
+        "year": 2025,
+        "peril": "Water",
+        "payout_usd": 50000,
+        "at_fault": false,
+        "description": "Basement inventory storage flooded due to failed sump pump during storm."
+      }
+    ]
+  },
+  "external_risk_factors": {
+    "prior_carrier_cancellation": true,
+    "gap_in_coverage_months": 4,
+    "environmental_hazard_score": 62.0,
+    "crime_hazard_score": 78.5,
+    "safety_compliance_certified": false,
+    "special_hazards": ["COMMERCIAL_COOKING", "POOR_HOUSEKEEPING_CITATION", "UNMONITORED_SECURITY"]
+  }
+}

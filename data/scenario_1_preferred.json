@@ -1,0 +1,35 @@
+{
+  "customer_id": "SYNTH-1092-US",
+  "entity_type": "INDIVIDUAL",
+  "demographics": {
+    "age": 42,
+    "years_in_business": null,
+    "credit_score": 795,
+    "credit_tier": "EXCELLENT",
+    "geographic_risk_zone": "TIER_2_INLAND_MIDWEST",
+    "annual_revenue_usd": null
+  },
+  "policy_request": {
+    "line_of_business": "PROPERTY_HOMEOWNERS",
+    "requested_limit_usd": 450000,
+    "deductible_usd": 1500,
+    "asset_age_years": 8,
+    "asset_category_or_construction": "Masonry Non-Combustible",
+    "protection_class_or_security": "Class 2 Protected"
+  },
+  "claim_history": {
+    "years_of_history": 5,
+    "total_claims_count": 0,
+    "total_payout_amount_usd": 0,
+    "open_claims_count": 0,
+    "incidents": []
+  },
+  "external_risk_factors": {
+    "prior_carrier_cancellation": false,
+    "gap_in_coverage_months": 0,
+    "environmental_hazard_score": 18.5,
+    "crime_hazard_score": 12.0,
+    "safety_compliance_certified": true,
+    "special_hazards": []
+  }
+}

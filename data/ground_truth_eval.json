@@ -1,0 +1,319 @@
+[
+  {
+    "test_id": "TEST-01-PRIME-HOME",
+    "description": "Pristine suburban homeowner with zero losses and excellent credit",
+    "payload": {
+      "customer_id": "SYNTH-T01-US",
+      "entity_type": "INDIVIDUAL",
+      "demographics": {
+        "age": 45,
+        "years_in_business": null,
+        "credit_score": 810,
+        "credit_tier": "EXCELLENT",
+        "geographic_risk_zone": "TIER_2_INLAND",
+        "annual_revenue_usd": null
+      },
+      "policy_request": {
+        "line_of_business": "PROPERTY_HOMEOWNERS",
+        "requested_limit_usd": 500000,
+        "deductible_usd": 1500,
+        "asset_age_years": 5,
+        "asset_category_or_construction": "Masonry",
+        "protection_class_or_security": "Class 2"
+      },
+      "claim_history": {
+        "years_of_history": 5,
+        "total_claims_count": 0,
+        "total_payout_amount_usd": 0,
+        "open_claims_count": 0,
+        "incidents": []
+      },
+      "external_risk_factors": {
+        "prior_carrier_cancellation": false,
+        "gap_in_coverage_months": 0,
+        "environmental_hazard_score": 15.0,
+        "crime_hazard_score": 10.0,
+        "safety_compliance_certified": true,
+        "special_hazards": []
+      }
+    },
+    "expected_verdict": "APPROVE",
+    "expected_kri_codes": [
+      "KRI-PRIME-01"
+    ]
+  },
+  {
+    "test_id": "TEST-02-RECURRENT-WATER",
+    "description": "Individual homeowner with multiple water pipe leaks",
+    "payload": {
+      "customer_id": "SYNTH-T02-US",
+      "entity_type": "INDIVIDUAL",
+      "demographics": {
+        "age": 52,
+        "years_in_business": null,
+        "credit_score": 720,
+        "credit_tier": "GOOD",
+        "geographic_risk_zone": "TIER_2_INLAND",
+        "annual_revenue_usd": null
+      },
+      "policy_request": {
+        "line_of_business": "PROPERTY_HOMEOWNERS",
+        "requested_limit_usd": 400000,
+        "deductible_usd": 1500,
+        "asset_age_years": 25,
+        "asset_category_or_construction": "Frame",
+        "protection_class_or_security": "Class 3"
+      },
+      "claim_history": {
+        "years_of_history": 5,
+        "total_claims_count": 2,
+        "total_payout_amount_usd": 38000,
+        "open_claims_count": 0,
+        "incidents": [
+          {
+            "year": 2023,
+            "peril": "Water",
+            "payout_usd": 18000,
+            "at_fault": false,
+            "description": "Bathroom pipe leak"
+          },
+          {
+            "year": 2024,
+            "peril": "Water",
+            "payout_usd": 20000,
+            "at_fault": false,
+            "description": "Slab pinhole leak"
+          }
+        ]
+      },
+      "external_risk_factors": {
+        "prior_carrier_cancellation": false,
+        "gap_in_coverage_months": 0,
+        "environmental_hazard_score": 25.0,
+        "crime_hazard_score": 18.0,
+        "safety_compliance_certified": true,
+        "special_hazards": []
+      }
+    },
+    "expected_verdict": "APPROVE_WITH_CONDITIONS",
+    "expected_kri_codes": [
+      "KRI-FREQ-01",
+      "KRI-PERIL-WATE"
+    ]
+  },
+  {
+    "test_id": "TEST-03-COASTAL-SURGE",
+    "description": "Coastal property with severe flood/hurricane exposure",
+    "payload": {
+      "customer_id": "SYNTH-T03-US",
+      "entity_type": "INDIVIDUAL",
+      "demographics": {
+        "age": 60,
+        "years_in_business": null,
+        "credit_score": 740,
+        "credit_tier": "GOOD",
+        "geographic_risk_zone": "TIER_1_COASTAL_HURRICANE",
+        "annual_revenue_usd": null
+      },
+      "policy_request": {
+        "line_of_business": "PROPERTY_HOMEOWNERS",
+        "requested_limit_usd": 650000,
+        "deductible_usd": 2500,
+        "asset_age_years": 12,
+        "asset_category_or_construction": "Masonry",
+        "protection_class_or_security": "Class 3"
+      },
+      "claim_history": {
+        "years_of_history": 5,
+        "total_claims_count": 1,
+        "total_payout_amount_usd": 14000,
+        "open_claims_count": 0,
+        "incidents": [
+          {
+            "year": 2023,
+            "peril": "Wind/Hail",
+            "payout_usd": 14000,
+            "at_fault": false,
+            "description": "Gale wind shingle loss"
+          }
+        ]
+      },
+      "external_risk_factors": {
+        "prior_carrier_cancellation": false,
+        "gap_in_coverage_months": 0,
+        "environmental_hazard_score": 88.0,
+        "crime_hazard_score": 22.0,
+        "safety_compliance_certified": true,
+        "special_hazards": [
+          "COASTAL_HURRICANE_ZONE"
+        ]
+      }
+    },
+    "expected_verdict": "APPROVE_WITH_CONDITIONS",
+    "expected_kri_codes": [
+      "KRI-CAT-01"
+    ]
+  },
+  {
+    "test_id": "TEST-04-PRIOR-CANCELLATION",
+    "description": "Carrier cancellation with open claim on commercial property",
+    "payload": {
+      "customer_id": "SYNTH-T04-US",
+      "entity_type": "COMMERCIAL",
+      "demographics": {
+        "age": null,
+        "years_in_business": 4,
+        "credit_score": 550,
+        "credit_tier": "POOR",
+        "geographic_risk_zone": "METRO_DISTRICT",
+        "annual_revenue_usd": 500000
+      },
+      "policy_request": {
+        "line_of_business": "COMMERCIAL_PROPERTY",
+        "requested_limit_usd": 900000,
+        "deductible_usd": 5000,
+        "asset_age_years": 35,
+        "asset_category_or_construction": "Masonry",
+        "protection_class_or_security": "Unmonitored"
+      },
+      "claim_history": {
+        "years_of_history": 4,
+        "total_claims_count": 3,
+        "total_payout_amount_usd": 95000,
+        "open_claims_count": 1,
+        "incidents": [
+          {
+            "year": 2023,
+            "peril": "Fire",
+            "payout_usd": 45000,
+            "at_fault": true,
+            "description": "Wiring fire in breaker"
+          },
+          {
+            "year": 2024,
+            "peril": "Theft",
+            "payout_usd": 25000,
+            "at_fault": false,
+            "description": "Storage unit theft"
+          },
+          {
+            "year": 2024,
+            "peril": "Liability",
+            "payout_usd": 25000,
+            "at_fault": true,
+            "description": "Slip and fall claim pending"
+          }
+        ]
+      },
+      "external_risk_factors": {
+        "prior_carrier_cancellation": true,
+        "gap_in_coverage_months": 3,
+        "environmental_hazard_score": 45.0,
+        "crime_hazard_score": 65.0,
+        "safety_compliance_certified": false,
+        "special_hazards": [
+          "UNMONITORED_WAREHOUSE"
+        ]
+      }
+    },
+    "expected_verdict": "REFER_TO_SENIOR_UW",
+    "expected_kri_codes": [
+      "KRI-FREQ-01",
+      "KRI-MORAL-01",
+      "KRI-FIN-01",
+      "KRI-OPEN-01"
+    ]
+  },
+  {
+    "test_id": "TEST-05-MODERATE-AUTO",
+    "description": "Standard commercial fleet with single collision loss",
+    "payload": {
+      "customer_id": "SYNTH-T05-US",
+      "entity_type": "COMMERCIAL",
+      "demographics": {
+        "age": null,
+        "years_in_business": 8,
+        "credit_score": 695,
+        "credit_tier": "GOOD",
+        "geographic_risk_zone": "TIER_2_INLAND",
+        "annual_revenue_usd": 1500000
+      },
+      "policy_request": {
+        "line_of_business": "COMMERCIAL_AUTO",
+        "requested_limit_usd": 1000000,
+        "deductible_usd": 2000,
+        "asset_age_years": 3,
+        "asset_category_or_construction": "Fleet Vans",
+        "protection_class_or_security": "Telematics Tracking"
+      },
+      "claim_history": {
+        "years_of_history": 5,
+        "total_claims_count": 1,
+        "total_payout_amount_usd": 8500,
+        "open_claims_count": 0,
+        "incidents": [
+          {
+            "year": 2023,
+            "peril": "Collision",
+            "payout_usd": 8500,
+            "at_fault": false,
+            "description": "Minor side swipe"
+          }
+        ]
+      },
+      "external_risk_factors": {
+        "prior_carrier_cancellation": false,
+        "gap_in_coverage_months": 0,
+        "environmental_hazard_score": 20.0,
+        "crime_hazard_score": 35.0,
+        "safety_compliance_certified": true,
+        "special_hazards": []
+      }
+    },
+    "expected_verdict": "APPROVE",
+    "expected_kri_codes": []
+  },
+  {
+    "test_id": "TEST-06-SUBPRIME-CREDIT-GAP",
+    "description": "Fair credit with coverage lapse",
+    "payload": {
+      "customer_id": "SYNTH-T06-US",
+      "entity_type": "INDIVIDUAL",
+      "demographics": {
+        "age": 38,
+        "years_in_business": null,
+        "credit_score": 605,
+        "credit_tier": "FAIR",
+        "geographic_risk_zone": "METRO_SUBURBAN",
+        "annual_revenue_usd": null
+      },
+      "policy_request": {
+        "line_of_business": "PROPERTY_HOMEOWNERS",
+        "requested_limit_usd": 320000,
+        "deductible_usd": 1000,
+        "asset_age_years": 15,
+        "asset_category_or_construction": "Frame",
+        "protection_class_or_security": "Class 3"
+      },
+      "claim_history": {
+        "years_of_history": 5,
+        "total_claims_count": 0,
+        "total_payout_amount_usd": 0,
+        "open_claims_count": 0,
+        "incidents": []
+      },
+      "external_risk_factors": {
+        "prior_carrier_cancellation": false,
+        "gap_in_coverage_months": 2,
+        "environmental_hazard_score": 30.0,
+        "crime_hazard_score": 40.0,
+        "safety_compliance_certified": true,
+        "special_hazards": []
+      }
+    },
+    "expected_verdict": "APPROVE_WITH_CONDITIONS",
+    "expected_kri_codes": [
+      "KRI-FIN-01"
+    ]
+  }
+]

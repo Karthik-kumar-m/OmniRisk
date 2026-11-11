@@ -1,0 +1,50 @@
+{
+  "customer_id": "SYNTH-3841-US",
+  "entity_type": "COMMERCIAL",
+  "demographics": {
+    "age": null,
+    "years_in_business": 7,
+    "credit_score": 710,
+    "credit_tier": "GOOD",
+    "geographic_risk_zone": "METRO_SUBURBAN_ZONE_4",
+    "annual_revenue_usd": 1250000
+  },
+  "policy_request": {
+    "line_of_business": "COMMERCIAL_AUTO",
+    "requested_limit_usd": 750000,
+    "deductible_usd": 2500,
+    "asset_age_years": 4,
+    "asset_category_or_construction": "Light Commercial Van Fleet (5 units)",
+    "protection_class_or_security": "GPS Telematics Enabled"
+  },
+  "claim_history": {
+    "years_of_history": 5,
+    "total_claims_count": 2,
+    "total_payout_amount_usd": 18200,
+    "open_claims_count": 0,
+    "incidents": [
+      {
+        "year": 2023,
+        "peril": "Collision",
+        "payout_usd": 11200,
+        "at_fault": true,
+        "description": "Rear bumper collision in parking apron during snow flurry."
+      },
+      {
+        "year": 2024,
+        "peril": "Glass/Comprehensive",
+        "payout_usd": 7000,
+        "at_fault": false,
+        "description": "Windshield rock strike causing cascading crack on highway."
+      }
+    ]
+  },
+  "external_risk_factors": {
+    "prior_carrier_cancellation": false,
+    "gap_in_coverage_months": 0,
+    "environmental_hazard_score": 38.0,
+    "crime_hazard_score": 42.5,
+    "safety_compliance_certified": true,
+    "special_hazards": ["URBAN_DENSITY_EXPOSURE"]
+  }
+}

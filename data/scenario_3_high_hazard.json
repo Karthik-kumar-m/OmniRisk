@@ -1,0 +1,57 @@
+{
+  "customer_id": "SYNTH-8492-US",
+  "entity_type": "INDIVIDUAL",
+  "demographics": {
+    "age": 56,
+    "years_in_business": null,
+    "credit_score": 625,
+    "credit_tier": "FAIR",
+    "geographic_risk_zone": "TIER_1_COASTAL_FLORIDA",
+    "annual_revenue_usd": null
+  },
+  "policy_request": {
+    "line_of_business": "PROPERTY_HOMEOWNERS",
+    "requested_limit_usd": 680000,
+    "deductible_usd": 2000,
+    "asset_age_years": 22,
+    "asset_category_or_construction": "Frame Construction / Stucco",
+    "protection_class_or_security": "Class 4 Semi-Protected"
+  },
+  "claim_history": {
+    "years_of_history": 5,
+    "total_claims_count": 3,
+    "total_payout_amount_usd": 86400,
+    "open_claims_count": 0,
+    "incidents": [
+      {
+        "year": 2022,
+        "peril": "Water",
+        "payout_usd": 24500,
+        "at_fault": false,
+        "description": "Slab leak beneath guest bathroom causing hardwood subfloor warping."
+      },
+      {
+        "year": 2023,
+        "peril": "Water",
+        "payout_usd": 31900,
+        "at_fault": false,
+        "description": "Second-floor laundry supply line burst while occupants were away."
+      },
+      {
+        "year": 2024,
+        "peril": "Wind/Hail",
+        "payout_usd": 30000,
+        "at_fault": false,
+        "description": "Tropical storm gale gusts detached soffit and perforated asphalt roof shingles."
+      }
+    ]
+  },
+  "external_risk_factors": {
+    "prior_carrier_cancellation": false,
+    "gap_in_coverage_months": 0,
+    "environmental_hazard_score": 84.5,
+    "crime_hazard_score": 28.0,
+    "safety_compliance_certified": true,
+    "special_hazards": ["COASTAL_HURRICANE_SURGE_ZONE", "SWIMMING_POOL_UNFENCED"]
+  }
+}
